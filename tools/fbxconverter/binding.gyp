@@ -16,26 +16,19 @@
 				   'CldLibVisualScene.cpp',
 				   'Collada.cpp',
 				   'fbxasset.cpp',
-				   'fbxconverter.cpp',
+				   'fbxconverter.cc',
 				   'stdafx.cpp',
 				   'TiFile.cpp',
 				   'TiStream.cpp' 
       ],
-      'copies':
-      [
-        {
-          'files': [ 'build/release/fbxconverter.node' ],
-          'destination': '<(PRODUCT_DIR)'
-        }
-      ]
 	  
       'conditions': [
         ['OS=="win"', {
           'libraries': [
-            'd:/Autodesk/FBX/FBX_SDK/2016.1.2/lib/vs2015/x64/release/libfbxsdk-md.lib'
+            'C:/Program Files/Autodesk/FBX/FBX SDK/2016.1.2/lib/vs2015/x64/release/libfbxsdk-md.lib'
           ],
           'include_dirs': [
-            'd:/Autodesk/FBX/FBX_SDK/2016.1.2/include'
+            'C:/Program Files/Autodesk/FBX/FBX SDK/2016.1.2/include'
           ],
           'configurations': {
             'Debug': {

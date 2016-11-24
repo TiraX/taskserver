@@ -24,6 +24,12 @@ if(cluster.isMaster){
 		setTimeout(function() {cluster.fork();},2000);
 	});
 }else{	
+    console.log('[worker] ' + "start worker ..." + cluster.worker.id);
+
+    process.on('message', function(msg) {
+        console.log('[worker] '+msg);
+        process.send('[worker] worker'+cluster.worker.id+' received!');
+    });
 	/**
 	 * Get port from environment and store in Express.
 	 */

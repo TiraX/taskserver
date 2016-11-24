@@ -69,7 +69,7 @@ void convert(const FunctionCallbackInfo<Value>& args) {
 	{
 		Local<Function> callback = Local<Function>::Cast(args[args.Length() - 1]);
 		Local<Value> argv[1] = {
-			String::NewFromUtf8(isolate, "callback information")
+			String::NewFromUtf8(isolate, "success")
 		};
 		callback->Call(isolate->GetCurrentContext()->Global(), 1, argv);
 	}

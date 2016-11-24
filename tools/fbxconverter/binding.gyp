@@ -25,10 +25,10 @@
       'conditions': [
         ['OS=="win"', {
           'libraries': [
-            'C:/Program Files/Autodesk/FBX/FBX SDK/2016.1.2/lib/vs2015/x64/release/libfbxsdk-md.lib'
+            'd:/Autodesk/FBX/FBX_SDK/2016.1.2/lib/vs2015/x64/release/libfbxsdk-md.lib'
           ],
           'include_dirs': [
-            'C:/Program Files/Autodesk/FBX/FBX SDK/2016.1.2/include'
+            'd:/Autodesk/FBX/FBX_SDK/2016.1.2/include'
           ],
           'configurations': {
             'Debug': {

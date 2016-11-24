@@ -37,17 +37,13 @@ router.post('/process', function(req, res) {
       task.process_models(function() {});
 	}
 	else if (ext == 'zip') {
-      task.unzip_files(src_file, function() {
-        console.log("unzip finished.");
-        setTimeout(function() {
-          task.process_models(function(){});
-        }, 100);
-        setTimeout(function() {
-          task.process_textures(function(){});
-        }, 110);
-	  });
+      task.process_zip_archive(src_file);
 	}
   });
+  
+  // send response back
+  var test_json = {status: 'ok'};
+  res.send(test_json);	
 });
 
 // remove temp directory
@@ -55,21 +51,6 @@ router.post('/remove_temp', function(req, res) {
   var fid = req.body.fileid;
   console.log('remove_temp fileid = ' + fid);
   
-  // remove this directory
-  var deleteFolderRecursive = function(path) {
-    if( fs.existsSync(path) ) {
-      fs.readdirSync(path).forEach(function(file,index){
-        var curPath = path + "/" + file;
-        if(fs.lstatSync(curPath).isDirectory()) { // recurse
-          deleteFolderRecursive(curPath);
-        } else { // delete file
-          fs.unlinkSync(curPath);
-        }
-      });
-      fs.rmdirSync(path);
-    }
-  };
-  deleteFolderRecursive('public/tmpfiles/' + fid);
   
   var test_json = {status: 'ok'};
   res.send(test_json);

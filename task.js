@@ -1,6 +1,7 @@
 var config = require('./config');
 var request = require('request');
 var unzip = require('unzip');
+var zlib = require('zlib');
 var fs = require('fs');
 var fbxconverter = require('./bin/fbxconverter');
 var gm = require('gm');
@@ -9,7 +10,7 @@ function Task(task_id) {
   this._id = task_id;
   this._queue = [];
   this._result = [];
-  this._finish_cb = undefined;
+  this._model = "";
 };
 
 Task.get_ext_name = function (path) {
@@ -76,8 +77,18 @@ Task.prototype.on_finish = function() {
           sent ++;
           if (sent >= task._result.length) {
             // all files transfered. remove tmp dir
-            console.log('process done, remove tmp directory.');
+            console.log('process done, remove tmp directory. ' + task._id);
             deleteFolderRecursive('public/tmpfiles/' + task._id);
+
+            // notify main server this task finished
+            var result = {};
+            result.id = task._id;
+            result.status = 0;
+            result.model = task._model;
+            var url = config.client + 'task_finished';
+            request.post({url: url, form: result}, function(err, res, body) {
+              console.log('notify task finished. ' + task._id);
+            });
           }
         }
       }
@@ -89,10 +100,7 @@ Task.prototype.on_finish = function() {
 Task.prototype.notify_task = function (name) {
   this._queue.pop();
   if (this._queue.length == 0) {
-    if ( this._finish_cb )
-      this._finish_cb();
-    else
-      this.on_finish();
+    this.on_finish();
   }
 };
 
@@ -103,14 +111,17 @@ Task.prototype.add_result = function(names) {
     this._result.push(n);
   }
 };
+Task.prototype.add_model_result = function(name) {
+  this._result.push(name);
+  this._model = name;
+};
 
 // unzip all files to temp directory '_id'
-Task.prototype.process_zip_archive = function (filepath, on_finish) {
+Task.prototype.process_zip_archive = function (filepath) {
   var dst_path = config.tmpDir + this._id + '/';
   var stream = fs.createReadStream(filepath).pipe(unzip.Extract({ path: dst_path }));
   var task = this;
   var dst_path = config.tmpDir + this._id;
-  this._finish_cb = on_finish;
   stream.on('finish', function() {
     // delay 100ms to make sure file stream is done.
     setTimeout(function() {
@@ -128,10 +139,16 @@ Task.prototype.process_models = function() {
   var models = Task.get_files(dst_path, ['fbx']);
   var dst_path = config.tmpDir + this._id + '/';
 
-  for (var m in models) {
-    var fname = models[m];
+  var _ref = this;
+
+  if (models.length == 0)
+    return;
+
+  //for (var m in models) {
+  {
+    var fname = models[0];
     var fname_lower = fname.toLowerCase();
-    console.log('===== find model : ' + fname);
+    console.log('= find model : ' + fname);
 
 	// rename file to lower case
 	fs.renameSync(dst_path + fname, dst_path + fname_lower);
@@ -139,8 +156,8 @@ Task.prototype.process_models = function() {
     var src_file = dst_path + fname_lower;
     var name_dae = fname_lower.replace('.fbx', '.tidae');	
     var dst_file = dst_path + name_dae;
-    console.log('===== dst_file : ' + dst_file);
-    // convert fbx model to tidae
+    console.log('= convert fbx dst_file : ' + dst_file);
+    // convert fbx model to tidae, sychronize
     var convert_error = undefined;
     fbxconverter.convert(src_file, dst_file, function(data) {
       console.log('convert finished. ' + data);
@@ -148,9 +165,20 @@ Task.prototype.process_models = function() {
         convert_error = data;
 	  }
     });
+    
+    // gzip it
+    var name_gz = name_dae + '.gz';
+    var dst_gz_file = dst_path + name_gz;
+    console.log('= gzip tidae dst_file : ' + dst_gz_file);
+    var input = fs.createReadStream(dst_file);
+    var output = fs.createWriteStream(dst_gz_file);
+    var gz_stream = input.pipe(zlib.createGzip()).pipe(output);
 
-    this.add_result([name_dae]);
-    this.notify_task(fname);
+    gz_stream.on('finish', function() {
+      console.log('gzip finished.' + dst_gz_file);
+      _ref.add_model_result(name_gz);
+      _ref.notify_task(fname);
+    });
   }
 };
 
@@ -165,7 +193,7 @@ Task.prototype.process_textures = function() {
 
   for (var t in textures) {
     var name = textures[t];
-    console.log('===== find texture : ' + name);
+    console.log('= find texture : ' + name);
 
     var resize_image = function(fname) {
       var fname_lower = fname.toLowerCase();
@@ -176,7 +204,7 @@ Task.prototype.process_textures = function() {
       var name_thumb = fname_lower.replace('.png', '_thumb.png');	
       name_thumb = name_thumb.replace('.jpg', '_thumb.jpg');	
       var dst_file = dst_path + name_thumb;
-      console.log('===== dst_file : ' + dst_file);
+      console.log('= dst_file : ' + dst_file);
       imageMagick(src_file).resize(thumb_size, thumb_size).write(dst_file, function(err) {
         console.log('resize [%s] to [%s].', src_file, dst_file);
         task.add_result([fname, name_thumb]);

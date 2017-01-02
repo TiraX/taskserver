@@ -42,8 +42,8 @@ router.post('/process', function(req, res) {
   });
   
   // send response back
-  var test_json = {status: 'ok'};
-  res.send(test_json);	
+  var result_json = {status: 'processing'};
+  res.send(result_json);	
 });
 
 // remove temp directory
@@ -55,4 +55,5 @@ router.post('/remove_temp', function(req, res) {
   var test_json = {status: 'ok'};
   res.send(test_json);
 });
+
 module.exports = router;

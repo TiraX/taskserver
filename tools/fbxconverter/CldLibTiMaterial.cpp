@@ -64,12 +64,14 @@ namespace ti
 	{
 		// set to default pbr material
 		Shader = "pbr";
+		Id = "pbr";
+		Technique = "normal";
 	}
 
 	//////////////////////////////////////////////////////////////////////////
 
 	CldLibTiMaterial::CldLibTiMaterial()
-		: TotalSets(0)
+		: TotalSets(1)
 	{
 	}
 
@@ -135,6 +137,7 @@ namespace ti
 
 			Materials.push_back(material);
 		}
+		TotalSets = 1;	// only support 1 sets now.
 
 		Loaded	= true;
 		return true;

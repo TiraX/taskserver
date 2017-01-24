@@ -15,7 +15,7 @@ namespace ti
 	void GetPhysicInfo(PhysicDesc& info, const ti_string& geometry_id)
 	{
 		CldLibGeometry* libGeom				= (CldLibGeometry*)TiCollada::Get()->ColladaLibraries[ECL_GEOMETRY];
-		CldGeometry* geometry				= libGeom->GetGeometryById(geometry_id.c_str() + 1);
+		CldGeometry* geometry				= libGeom->GetGeometryById(geometry_id.c_str());
 		TI_ASSERT(geometry);
 		if (info.Type == EPHYT_SPHERE)
 		{
@@ -335,14 +335,14 @@ namespace ti
 			desc.StrIndex_Sid			= AddStringToList(node->Sid, string_list);
 			desc.Type					= GetNodeType(node->Type);
 			desc.Flag					= 0;
-			desc.StrIndex_InstanceUrl	= AddStringToList(node->InstanceUrl.empty() ? "" : node->InstanceUrl.c_str() + 1, string_list);
+			desc.StrIndex_InstanceUrl	= AddStringToList(node->InstanceUrl.empty() ? "" : node->InstanceUrl.c_str(), string_list);
 			desc.ParentNodeIndex		= GetNodeIndex(node->Parent);
 
 			if (desc.Type == ENT_MESH ||
 				desc.Type == ENT_SKINMESH ||
 				desc.Type == ENT_MORPHMESH)
 			{
-				desc.StrIndex_MId		= AddStringToList(node->BindMaterialId.c_str() + 1, string_list);
+				desc.StrIndex_MId		= AddStringToList(node->BindMaterialId, string_list);
 			}
 			else
 			{

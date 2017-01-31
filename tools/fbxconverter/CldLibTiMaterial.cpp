@@ -64,8 +64,8 @@ namespace ti
 	{
 		// set to default pbr material
 		Shader = "pbr";
-		Id = "pbr";
 		Technique = "normal";
+		Flag = 1;	// pbr flag to bind env cube texture
 	}
 
 	//////////////////////////////////////////////////////////////////////////
